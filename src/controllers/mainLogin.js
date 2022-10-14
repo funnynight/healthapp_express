@@ -21,7 +21,9 @@ router.post("/login", async (req, res) => {
     const userLogin = await User.findOne({ email: email });
     const adminLogin = await Admin.findOne({ email: email });
     const superAdminLogin = await superAdmin.findOne({ email: email });
-
+console.log(userLogin)
+console.log(adminLogin)
+console.log(superAdminLogin)
     if (userLogin) {
       const isMatch = await bcrypt.compare(password, userLogin.password);
       
