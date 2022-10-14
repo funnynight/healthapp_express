@@ -11,6 +11,11 @@ const User = require("../models/userModel");
 const superAdmin = require("../models/superAdminModel");
 
 // user login route
+router.get("/login", async (req, res) => {
+  console.log("Here");
+  res.status(200).json({ data: "Login" });
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -21,12 +26,12 @@ router.post("/login", async (req, res) => {
     const userLogin = await User.findOne({ email: email });
     const adminLogin = await Admin.findOne({ email: email });
     const superAdminLogin = await superAdmin.findOne({ email: email });
-console.log(userLogin)
-console.log(adminLogin)
-console.log(superAdminLogin)
+    console.log(userLogin);
+    console.log(adminLogin);
+    console.log(superAdminLogin);
     if (userLogin) {
       const isMatch = await bcrypt.compare(password, userLogin.password);
-      
+
       if (!isMatch) {
         res.status(400).json({ message: "invalid credintials" });
       } else {
