@@ -65,8 +65,8 @@ router.get("/get_plot", async function (req, res, next) {
   fs.open(path, "r+", function (err, f) {
     if (err) throw err;
 
-    const buffer = Buffer.alloc(26_00);
-    fs.read(f, buffer, 0, 25_00, position, function (err, bytesRead, buffer) {
+    const buffer = Buffer.alloc(52_000);
+    fs.read(f, buffer, 0, 50_000, position, function (err, bytesRead, buffer) {
       const lines = buffer.toString().split("\n");
 
       if (lines.length >= 2) {
