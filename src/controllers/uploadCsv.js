@@ -77,6 +77,11 @@ router.get("/get_plot", async function (req, res, next) {
             x: Math.floor(parseFloat(values[0]) * 1000),
             y: parseInt(values[1]),
             z: parseInt(values[2]),
+            bpm: parseInt(values[3]),
+            asp: parseInt(values[4]),
+            cvp: parseInt(values[5]),
+            p02: parseInt(values[6]),
+            bVol: parseInt(values[7]),
           });
         }
         res.status(200).json(json);
