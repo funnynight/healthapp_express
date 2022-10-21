@@ -57,6 +57,10 @@ router.post("/uploadCSV", async function (req, res, next) {
 router.get("/get_plot", async function (req, res, next) {
   const value = parseInt(req.query.value);
   const path = "upload.csv";
+  if (!fs.existsSync(path)) {
+    res.status(200).json([]);
+    return;
+  }
   const stat = fs.statSync(path);
   const fileSize = stat.size;
 
@@ -93,6 +97,7 @@ router.get("/get_plot", async function (req, res, next) {
 });
 
 router.post("/uploadHEX", async function (req, res, next) {
+  
   const data = await new Promise((resolve, reject) => {
     const form = new IncomingForm({ maxFileSize: 2000 * 1024 * 1024 });
 
@@ -123,6 +128,10 @@ router.post("/uploadHEX", async function (req, res, next) {
 router.get("/get_ecg", async function (req, res, next) {
   const value = parseInt(req.query.value);
   const path = "upload.hex";
+  if (!fs.existsSync(path)) {
+    res.status(200).json([]);
+    return;
+  }
   const stat = fs.statSync(path);
   const totalCount = stat.size / 3;
   const position = Math.floor((totalCount * value) / 100_000);
