@@ -36,7 +36,7 @@ router.post("/uploadCSV", async function (req, res, next) {
     });
   });
   console.log(data);
-  
+
   const oldpath = data.files.file.filepath;
   const newpath = "upload.csv";
 
@@ -91,4 +91,62 @@ router.get("/get_plot", async function (req, res, next) {
     });
   });
 });
+
+router.post("/uploadHEX", async function (req, res, next) {
+  const data = await new Promise((resolve, reject) => {
+    const form = new IncomingForm({ maxFileSize: 2000 * 1024 * 1024 });
+
+    form.parse(req, (err, fields, files) => {
+      if (err) return reject(err);
+      resolve({ fields, files });
+    });
+  });
+  console.log(data);
+
+  const oldpath = data.files.file.filepath;
+  const newpath = "upload.hex";
+
+  const source = fs.createReadStream(oldpath);
+  const dest = fs.createWriteStream(newpath);
+
+  source.pipe(dest);
+  source.on("end", async function () {
+    console.log("upload " + newpath);
+  });
+  source.on("error", function (err) {
+    console.log("move error");
+  });
+
+  res.status(200).json({ name: "Bambang" });
+});
+
+router.get("/get_ecg", async function (req, res, next) {
+  const value = parseInt(req.query.value);
+  const path = "upload.hex";
+  const stat = fs.statSync(path);
+  const totalCount = stat.size / 3;
+  const position = Math.floor((totalCount * value) / 100_000);
+  const resCount = 1000;
+
+  fs.open(path, "r+", function (err, f) {
+    if (err) throw err;
+
+    const buffer = Buffer.alloc(52_000);
+    fs.read(f, buffer, 0, 50_000, position, function (err, bytesRead, buffer) {
+      const json = [];
+      for (let i = 0; i < resCount; i++) {
+        if (i * 3 < bytesRead) {
+          let v1 = buffer.readUint8(i * 3);
+          let v2 = buffer.readUint8(i * 3 + 1);
+          let v3 = buffer.readUint8(i * 3 + 2);
+
+          let value = (v1 << 16) + (v2 << 8) + v3;
+          json.push(value);
+        }
+      }
+      res.status(200).json(json);
+    });
+  });
+});
+
 module.exports = router;
