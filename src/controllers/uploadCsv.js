@@ -5,6 +5,7 @@ const router = express.Router();
 
 const { IncomingForm } = require("formidable");
 const fs = require("fs");
+const scaler = require("minmaxscaler");
 
 // const upload = multer()
 
@@ -97,7 +98,6 @@ router.get("/get_plot", async function (req, res, next) {
 });
 
 router.post("/uploadHEX", async function (req, res, next) {
-  
   const data = await new Promise((resolve, reject) => {
     const form = new IncomingForm({ maxFileSize: 2000 * 1024 * 1024 });
 
@@ -133,7 +133,8 @@ router.get("/get_ecg", async function (req, res, next) {
     return;
   }
   const stat = fs.statSync(path);
-  const totalCount = stat.size / 3;
+  const headerSize = 0x1a;
+  const totalCount = (stat.size - headerSize) / 3;
   const position = Math.floor((totalCount * value) / 100_000);
   const resCount = 1000;
 
@@ -141,20 +142,38 @@ router.get("/get_ecg", async function (req, res, next) {
     if (err) throw err;
 
     const buffer = Buffer.alloc(52_000);
-    fs.read(f, buffer, 0, 50_000, position, function (err, bytesRead, buffer) {
-      const json = [];
-      for (let i = 0; i < resCount; i++) {
-        if (i * 3 < bytesRead) {
-          let v1 = buffer.readUint8(i * 3);
-          let v2 = buffer.readUint8(i * 3 + 1);
-          let v3 = buffer.readUint8(i * 3 + 2);
+    fs.read(
+      f,
+      buffer,
+      0,
+      50_000,
+      position + headerSize,
+      function (err, bytesRead, buffer) {
+        const data = [], temp=[];
+        for (let i = 0; i < resCount; i++) {
+          if (i * 3 < bytesRead) {
+            let v1 = buffer.readUint8(i * 3);
+            let v2 = buffer.readUint8(i * 3 + 1);
+            let v3 = buffer.readUint8(i * 3 + 2);
 
-          let value = (v1 << 16) + (v2 << 8) + v3;
-          json.push(value);
+            let value = (v1 << 16) + (v2 << 8) + v3;
+            data.push(value);
+            temp.push(value);
+          }
         }
+
+        // function compareNumbers(a, b) {
+        //   return a - b;
+        // }
+        // temp.sort(compareNumbers);
+        // const min = temp[resCount / 4];
+        // const max = temp[(resCount / 4) * 3];
+        // console.log(min, max);
+
+        const fit = scaler.fit_transform(data, -1, 1);
+        res.status(200).json(fit);
       }
-      res.status(200).json(json);
-    });
+    );
   });
 });
 
