@@ -134,9 +134,10 @@ router.get("/get_ecg", async function (req, res, next) {
   }
   const stat = fs.statSync(path);
   const headerSize = 0x1a;
-  const totalCount = (stat.size - headerSize) / 3;
+  const leadNumber = 2;
+  const totalCount = (stat.size - headerSize) / (3 * leadNumber);
   const position = Math.floor((totalCount * value) / 100_000);
-  const resCount = 1000;
+  const resCount = 2000;
 
   fs.open(path, "r+", function (err, f) {
     if (err) throw err;
@@ -147,17 +148,24 @@ router.get("/get_ecg", async function (req, res, next) {
       buffer,
       0,
       50_000,
-      position + headerSize,
+      position * 3 * leadNumber + headerSize,
       function (err, bytesRead, buffer) {
-        const data = [], temp=[];
+        const data = [],
+          temp = [];
         for (let i = 0; i < resCount; i++) {
-          if (i * 3 < bytesRead) {
-            let v1 = buffer.readUint8(i * 3);
-            let v2 = buffer.readUint8(i * 3 + 1);
-            let v3 = buffer.readUint8(i * 3 + 2);
+          if ((i + 1) * 3 * leadNumber < bytesRead) {
+            let v1 = buffer.readUint8(i * 3 * leadNumber);
+            let v2 = buffer.readUint8(i * 3 * leadNumber + 1);
+            let v3 = buffer.readUint8(i * 3 * leadNumber + 2);
 
             let value = (v1 << 16) + (v2 << 8) + v3;
             data.push(value);
+
+            v1 = buffer.readUint8(i * 3 * leadNumber + 3);
+            v2 = buffer.readUint8(i * 3 * leadNumber + 4);
+            v3 = buffer.readUint8(i * 3 * leadNumber + 5);
+
+            value = (v1 << 16) + (v2 << 8) + v3;
             temp.push(value);
           }
         }
@@ -170,8 +178,8 @@ router.get("/get_ecg", async function (req, res, next) {
         // const max = temp[(resCount / 4) * 3];
         // console.log(min, max);
 
-        const fit = scaler.fit_transform(data, -1, 1);
-        res.status(200).json(fit);
+        // const fit = scaler.fit_transform(data, -1, 1);
+        res.status(200).json({lead1: data, lead2: temp});
       }
     );
   });
