@@ -150,8 +150,8 @@ router.get("/get_ecg", async function (req, res, next) {
       50_000,
       position * 3 * leadNumber + headerSize,
       function (err, bytesRead, buffer) {
-        const data = [],
-          temp = [];
+        const lead1 = [],
+          lead2 = [];
         for (let i = 0; i < resCount; i++) {
           if ((i + 1) * 3 * leadNumber < bytesRead) {
             let v1 = buffer.readUint8(i * 3 * leadNumber);
@@ -159,14 +159,14 @@ router.get("/get_ecg", async function (req, res, next) {
             let v3 = buffer.readUint8(i * 3 * leadNumber + 2);
 
             let value = (v1 << 16) + (v2 << 8) + v3;
-            data.push(value);
+            lead1.push(value);
 
             v1 = buffer.readUint8(i * 3 * leadNumber + 3);
             v2 = buffer.readUint8(i * 3 * leadNumber + 4);
             v3 = buffer.readUint8(i * 3 * leadNumber + 5);
 
             value = (v1 << 16) + (v2 << 8) + v3;
-            temp.push(value);
+            lead2.push(value);
           }
         }
 
@@ -179,7 +179,7 @@ router.get("/get_ecg", async function (req, res, next) {
         // console.log(min, max);
 
         // const fit = scaler.fit_transform(data, -1, 1);
-        res.status(200).json({lead1: data, lead2: temp});
+        res.status(200).json({lead1, lead2});
       }
     );
   });
