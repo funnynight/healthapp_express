@@ -14,7 +14,7 @@ require("./src/db/conn");
 app.use(cookieParser());
 app.use(cors())
 
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 8000;
 
 
 app.use(function (req, res, next) {
