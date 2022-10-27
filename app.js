@@ -16,7 +16,7 @@ require("./src/db/conn");
 app.use(cookieParser());
 app.use(cors());
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8443;
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
