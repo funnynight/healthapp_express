@@ -16,7 +16,7 @@ require("./src/db/conn");
 app.use(cookieParser());
 app.use(cors());
 
-const port = process.env.PORT || 8443;
+const port = process.env.PORT || 8000;
 
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -39,15 +39,15 @@ app.use(require("./src/controllers/superAdminController"));
 app.use(require("./src/controllers/uploadCsv"));
 app.use(require("./src/controllers/ecgController"));
 
-const options = {
-  key: fs.readFileSync(path.join(__dirname, "./cert/key.pem")),
-  cert: fs.readFileSync(path.join(__dirname, "./cert/cert.pem")),
-};
-const sslServer = https.createServer(options, app);
-sslServer.listen(port, () => {
-  console.log(`Secure server is listening on port ${port}`);
-});
-
-// app.listen(port, () => {
-//   console.log(`server is running on port ${port}`);
+// const options = {
+//   key: fs.readFileSync(path.join(__dirname, "./cert/key.pem")),
+//   cert: fs.readFileSync(path.join(__dirname, "./cert/cert.pem")),
+// };
+// const sslServer = https.createServer(options, app);
+// sslServer.listen(port, () => {
+//   console.log(`Secure server is listening on port ${port}`);
 // });
+
+app.listen(port, () => {
+  console.log(`server is running on port ${port}`);
+});
