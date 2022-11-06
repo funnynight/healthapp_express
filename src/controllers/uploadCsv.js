@@ -77,7 +77,9 @@ router.get("/get_plot", async function (req, res, next) {
       if (lines.length >= 2) {
         const json = [];
         for (let i = 1; i < lines.length - 1; i++) {
-          const values = lines[i].replaceAll("\r", "").split(",");
+          // const values = lines[i].replaceAll("\r", "").split(",");
+          const values = lines[i].replace(/\r/g, "").split(",");
+
           json.push({
             x: Math.floor(parseFloat(values[0]) * 1000),
             y: parseInt(values[1]),
